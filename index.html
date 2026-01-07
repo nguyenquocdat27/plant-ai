@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Plant AI</title>
+
+  <!-- TensorFlow & Teachable Machine -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+</head>
+
+<body>
+  <h1>🌱 Plant AI</h1>
+  <button onclick="init()">Load model</button>
+  <div id="result">Chưa có kết quả</div>
+
+  <script>
+    const URL = "./";
+    let model;
+
+    async function init() {
+      document.getElementById("result").innerText = "Đang load model...";
+      model = await tmImage.load(
+        URL + "model.json",
+        URL + "metadata.json"
+      );
+      document.getElementById("result").innerText = "✅ Load model thành công!";
+      console.log("Model loaded");
+    }
+  </script>
+</body>
+</html>
