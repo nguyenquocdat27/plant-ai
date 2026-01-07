@@ -4,13 +4,14 @@
 <meta charset="UTF-8">
 <title>Plant AI</title>
 
+<!-- TensorFlow -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
 
 <style>
 body {
   margin: 0;
-  padding: 12px;
+  padding: 14px;
   font-family: Arial, sans-serif;
   background: #1b8f4b;
   color: #fff;
@@ -18,26 +19,26 @@ body {
 }
 
 h1 {
-  font-size: 32px;
-  margin-bottom: 10px;
+  font-size: 34px;
+  margin-bottom: 14px;
 }
 
 /* ===== INPUT STAGE ===== */
 #input-stage {
   background: #147a3a;
-  padding: 20px;
-  border-radius: 20px;
+  padding: 22px;
+  border-radius: 24px;
 }
 
 input[type="file"],
 input[type="number"] {
   width: 100%;
-  max-width: 360px;
-  padding: 18px;
-  margin: 10px auto;
+  max-width: 380px;
+  padding: 20px;
+  margin: 12px auto;
   border-radius: 30px;
   border: none;
-  font-size: 20px;
+  font-size: 22px;
   display: block;
 }
 
@@ -48,38 +49,42 @@ input[type="number"] {
 
 img {
   width: 100%;
-  max-width: 320px;
-  border-radius: 16px;
-  margin: 15px auto;
+  max-width: 330px;
+  border-radius: 18px;
+  margin: 16px auto;
 }
 
 /* Kết quả lá */
 #leafResult {
-  font-size: 22px;
-  margin: 10px 0;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 12px 0;
 }
 
-/* Nhiệt độ & độ ẩm to */
+/* Nhiệt độ & độ ẩm */
 .env-box {
   background: #b6ff7a;
   color: #000;
-  padding: 18px;
-  border-radius: 20px;
-  margin: 10px 0;
+  padding: 20px;
+  border-radius: 22px;
+  margin: 10px auto;
   font-size: 22px;
   font-weight: bold;
+  max-width: 360px;
 }
 
-/* Lời khuyên */
+/* ===== ĐÁNH GIÁ ===== */
 #advice-box {
   background: #eaffd0;
   color: #000;
-  padding: 20px;
-  border-radius: 20px;
-  margin-top: 15px;
-  font-size: 18px;
-  text-align: left;
+  padding: 24px;
+  border-radius: 24px;
+  margin: 20px auto;
+  font-size: 20px;
+  text-align: center;
   white-space: pre-line;
+  max-width: 420px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
 }
 </style>
 </head>
@@ -88,15 +93,15 @@ img {
 
 <h1>🌱 Plant AI</h1>
 
-<!-- ===== BEFORE ===== -->
+<!-- ===== TRƯỚC KHI NHẬP ===== -->
 <div id="input-stage">
   <input type="file" accept="image/*" onchange="loadImage(event)">
   <input type="number" id="temp" placeholder="🌡️ Nhiệt độ đất (°C)">
   <input type="number" id="moisture" placeholder="💧 Độ ẩm đất (%)">
-  <p style="font-size:18px;">📸 Chọn ảnh + nhập dữ liệu để phân tích</p>
+  <p style="font-size:18px;">📸 Chọn ảnh + nhập dữ liệu để AI phân tích</p>
 </div>
 
-<!-- ===== AFTER ===== -->
+<!-- ===== SAU KHI CÓ KẾT QUẢ ===== -->
 <div id="result-stage">
   <img id="preview">
   <div id="leafResult"></div>
@@ -118,35 +123,64 @@ async function init() {
   );
 }
 
+/* ===== ĐÁNH GIÁ TỔNG HỢP ===== */
 function evaluatePlant(status, temp, moisture) {
-  let a = "";
+  let text = "🧠 ĐÁNH GIÁ TỔNG HỢP\n\n";
+
+  /* Phân tích lá */
+  if (status.includes("tốt")) {
+    text += "🌿 Lá khỏe, màu sắc ổn định.\n";
+  }
 
   if (status.includes("vàng")) {
-    a += "🍂 VÀNG LÁ / HÉO RŨ\n";
-    a += "- Thiếu dinh dưỡng hoặc rễ yếu\n";
-    a += "- Bón phân hữu cơ, kiểm tra đất\n\n";
+    text += "🍂 Lá vàng / héo → rễ hấp thu kém hoặc thiếu dinh dưỡng.\n";
   }
 
   if (status.includes("đốm")) {
-    a += "🦠 ĐỐM LÁ\n";
-    a += "- Có khả năng bệnh nấm\n";
-    a += "- Cắt lá bệnh, tránh ẩm cao\n\n";
+    text += "🦠 Có đốm lá → nguy cơ bệnh nấm.\n";
   }
 
   if (status.includes("cháy")) {
-    a += "🔥 CHÁY LÁ\n";
-    a += "- Do nắng gắt hoặc thiếu nước\n";
-    a += "- Che nắng, tưới đều\n\n";
+    text += "🔥 Mép lá cháy → stress nhiệt hoặc thiếu nước.\n";
   }
 
-  if (temp > 35) a += "🌡️ Nhiệt độ cao → che phủ đất\n";
-  if (temp < 15) a += "🌡️ Nhiệt độ thấp → giảm tưới\n";
-  if (moisture < 40) a += "💧 Độ ẩm thấp → cây thiếu nước\n";
-  if (moisture > 80) a += "💧 Độ ẩm cao → nguy cơ thối rễ\n";
+  text += "\n📊 PHÂN TÍCH MÔI TRƯỜNG\n";
 
-  return a || "🌿 Cây đang phát triển tốt.";
+  if (temp > 35) {
+    text += "🌡️ Nhiệt độ rất cao → cây dễ sốc nhiệt.\n";
+  } else if (temp < 15) {
+    text += "🌡️ Nhiệt độ thấp → cây sinh trưởng chậm.\n";
+  } else {
+    text += "🌡️ Nhiệt độ phù hợp.\n";
+  }
+
+  if (moisture < 40) {
+    text += "💧 Độ ẩm thấp → cây thiếu nước.\n";
+  } else if (moisture > 80) {
+    text += "💧 Độ ẩm cao → nguy cơ thối rễ.\n";
+  } else {
+    text += "💧 Độ ẩm ổn định.\n";
+  }
+
+  text += "\n⚠️ CHẨN ĐOÁN\n";
+
+  if (status.includes("cháy") && temp > 35 && moisture < 40) {
+    text += "👉 Cây đang bị STRESS NHIỆT + THIẾU NƯỚC nghiêm trọng.\n";
+  } else if (status.includes("đốm") && moisture > 70) {
+    text += "👉 Điều kiện thuận lợi cho NẤM BỆNH phát triển.\n";
+  } else {
+    text += "👉 Cây có khả năng phục hồi tốt nếu chăm sóc đúng.\n";
+  }
+
+  text += "\n✅ KHUYẾN NGHỊ\n";
+  text += "• Tưới nước vào sáng sớm\n";
+  text += "• Che gốc, phủ rơm giữ ẩm\n";
+  text += "• Theo dõi lá mới trong 3–5 ngày\n";
+
+  return text;
 }
 
+/* ===== LOAD ẢNH ===== */
 async function loadImage(event) {
   if (!model) await init();
 
@@ -166,8 +200,11 @@ async function loadImage(event) {
     document.getElementById("leafResult").innerText =
       `🌿 ${best.className} (${(best.probability*100).toFixed(1)}%)`;
 
-    document.getElementById("tempBox").innerText = `🌡️ Nhiệt độ: ${temp} °C`;
-    document.getElementById("moistureBox").innerText = `💧 Độ ẩm: ${moisture} %`;
+    document.getElementById("tempBox").innerText =
+      `🌡️ Nhiệt độ: ${temp} °C`;
+
+    document.getElementById("moistureBox").innerText =
+      `💧 Độ ẩm: ${moisture} %`;
 
     document.getElementById("advice-box").innerText =
       evaluatePlant(best.className.toLowerCase(), temp, moisture);
