@@ -4,28 +4,53 @@
   <meta charset="UTF-8">
   <title>Plant AI</title>
 
-  <!-- TensorFlow & Teachable Machine -->
+  <!-- TensorFlow -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+
+  <style>
+    body { font-family: Arial; text-align: center; }
+    img { max-width: 300px; margin-top: 10px; }
+  </style>
 </head>
 
 <body>
   <h1>🌱 Plant AI</h1>
-  <button onclick="init()">Load model</button>
-  <div id="result">Chưa có kết quả</div>
+
+  <input type="file" accept="image/*" onchange="loadImage(event)">
+  <br>
+  <img id="preview">
+  <p id="result">Chưa có kết quả</p>
 
   <script>
     const URL = "./";
     let model;
 
     async function init() {
-      document.getElementById("result").innerText = "Đang load model...";
       model = await tmImage.load(
         URL + "model.json",
         URL + "metadata.json"
       );
-      document.getElementById("result").innerText = "✅ Load model thành công!";
       console.log("Model loaded");
+    }
+
+    async function loadImage(event) {
+      if (!model) await init();
+
+      const img = document.getElementById("preview");
+      img.src = URL.createObjectURL(event.target.files[0]);
+
+      img.onload = async () => {
+        const prediction = await model.predict(img);
+        let best = prediction[0];
+
+        for (let p of prediction) {
+          if (p.probability > best.probability) best = p;
+        }
+
+        document.getElementById("result").innerText =
+          `🌿 Kết quả: ${best.className} (${(best.probability*100).toFixed(1)}%)`;
+      };
     }
   </script>
 </body>
