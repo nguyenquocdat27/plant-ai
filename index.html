@@ -169,10 +169,10 @@ function evaluatePlant(status, temp, moisture) {
   } else if (status.includes("đốm") && moisture > 70) {
     text += "👉 Điều kiện thuận lợi cho NẤM BỆNH phát triển.\n";
   } else {
-    text += "👉 Cây có khả năng phục hồi tốt nếu chăm sóc đúng.\n";
+    text += "👉 Cây có tình trạng tốt, tiếp tục duy trì.\n";
   }
 
-  text += "\n✅ KHUYẾN NGHỊ\n";
+  text += "\n✅ KHUYẾN KHÍCH\n";
   text += "• Tưới nước vào sáng sớm\n";
   text += "• Che gốc, phủ rơm giữ ẩm\n";
   text += "• Theo dõi lá mới trong 3–5 ngày\n";
@@ -214,3 +214,4 @@ async function loadImage(event) {
 
 </body>
 </html>
+
