@@ -1,183 +1,179 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Plant AI</title>
+<meta charset="UTF-8">
+<title>Plant AI</title>
 
-  <!-- TensorFlow -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
 
-  <style>
-    body {
-      font-family: Arial;
-      background: #e8f5e9;
-      margin: 0;
-      padding: 10px;
-      text-align: center;
-    }
+<style>
+body {
+  margin: 0;
+  padding: 12px;
+  font-family: Arial, sans-serif;
+  background: #1b8f4b;
+  color: #fff;
+  text-align: center;
+}
 
-    h1 {
-      margin-bottom: 10px;
-    }
+h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
 
-    /* ===== TRẠNG THÁI 1 ===== */
-    #input-stage {
-      background: #2e7d32;
-      color: white;
-      padding: 20px;
-      border-radius: 16px;
-    }
+/* ===== INPUT STAGE ===== */
+#input-stage {
+  background: #147a3a;
+  padding: 20px;
+  border-radius: 20px;
+}
 
-    #input-stage input {
-      width: 90%;
-      max-width: 300px;
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 20px;
-      border: none;
-      font-size: 16px;
-    }
+input[type="file"],
+input[type="number"] {
+  width: 100%;
+  max-width: 360px;
+  padding: 18px;
+  margin: 10px auto;
+  border-radius: 30px;
+  border: none;
+  font-size: 20px;
+  display: block;
+}
 
-    /* ===== TRẠNG THÁI 2 ===== */
-    #result-stage {
-      display: none;
-      margin-top: 15px;
-    }
+/* ===== RESULT STAGE ===== */
+#result-stage {
+  display: none;
+}
 
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-    }
+img {
+  width: 100%;
+  max-width: 320px;
+  border-radius: 16px;
+  margin: 15px auto;
+}
 
-    img {
-      max-width: 180px;
-      border-radius: 12px;
-    }
+/* Kết quả lá */
+#leafResult {
+  font-size: 22px;
+  margin: 10px 0;
+}
 
-    .chip {
-      background: #c8fca2;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 14px;
-      margin: 4px;
-      display: inline-block;
-    }
+/* Nhiệt độ & độ ẩm to */
+.env-box {
+  background: #b6ff7a;
+  color: #000;
+  padding: 18px;
+  border-radius: 20px;
+  margin: 10px 0;
+  font-size: 22px;
+  font-weight: bold;
+}
 
-    #advice-box {
-      background: #f1f8e9;
-      border-radius: 16px;
-      padding: 15px;
-      margin-top: 12px;
-      text-align: left;
-      font-size: 14px;
-      white-space: pre-line;
-    }
-  </style>
+/* Lời khuyên */
+#advice-box {
+  background: #eaffd0;
+  color: #000;
+  padding: 20px;
+  border-radius: 20px;
+  margin-top: 15px;
+  font-size: 18px;
+  text-align: left;
+  white-space: pre-line;
+}
+</style>
 </head>
 
 <body>
 
-  <h1>🌱 Plant AI</h1>
+<h1>🌱 Plant AI</h1>
 
-  <!-- ===== TRẠNG THÁI TRƯỚC NHẬP ===== -->
-  <div id="input-stage">
-    <input type="file" accept="image/*" onchange="loadImage(event)">
-    <input type="number" id="temp" placeholder="🌡️ Nhiệt độ đất (°C)">
-    <input type="number" id="moisture" placeholder="💧 Độ ẩm đất (%)">
-    <p>📷 Chọn ảnh lá + nhập dữ liệu để phân tích</p>
-  </div>
+<!-- ===== BEFORE ===== -->
+<div id="input-stage">
+  <input type="file" accept="image/*" onchange="loadImage(event)">
+  <input type="number" id="temp" placeholder="🌡️ Nhiệt độ đất (°C)">
+  <input type="number" id="moisture" placeholder="💧 Độ ẩm đất (%)">
+  <p style="font-size:18px;">📸 Chọn ảnh + nhập dữ liệu để phân tích</p>
+</div>
 
-  <!-- ===== TRẠNG THÁI SAU KẾT QUẢ ===== -->
-  <div id="result-stage">
-    <div class="row">
-      <img id="preview">
-      <div>
-        <div class="chip" id="leafResult"></div>
-        <div class="chip" id="tempChip"></div>
-        <div class="chip" id="moistureChip"></div>
-      </div>
-    </div>
+<!-- ===== AFTER ===== -->
+<div id="result-stage">
+  <img id="preview">
+  <div id="leafResult"></div>
 
-    <div id="advice-box"></div>
-  </div>
+  <div class="env-box" id="tempBox"></div>
+  <div class="env-box" id="moistureBox"></div>
 
-  <script>
-    const MODEL_URL = "./";
-    let model;
+  <div id="advice-box"></div>
+</div>
 
-    async function init() {
-      model = await tmImage.load(
-        MODEL_URL + "model.json",
-        MODEL_URL + "metadata.json"
-      );
-      console.log("Model loaded");
-    }
+<script>
+const MODEL_URL = "./";
+let model;
 
-    function evaluatePlant(status, temp, moisture) {
-      let advice = "";
+async function init() {
+  model = await tmImage.load(
+    MODEL_URL + "model.json",
+    MODEL_URL + "metadata.json"
+  );
+}
 
-      if (status.includes("vàng")) {
-        advice += "🍂 Vàng lá / héo rũ:\n";
-        advice += "- Có thể thiếu dinh dưỡng hoặc rễ bị tổn thương.\n";
-        advice += "- Nên kiểm tra đất và bón phân hữu cơ.\n\n";
-      }
+function evaluatePlant(status, temp, moisture) {
+  let a = "";
 
-      if (status.includes("đốm")) {
-        advice += "🦠 Đốm lá:\n";
-        advice += "- Nguy cơ bệnh nấm/vi khuẩn.\n";
-        advice += "- Cắt lá bệnh, hạn chế tưới lên lá.\n\n";
-      }
+  if (status.includes("vàng")) {
+    a += "🍂 VÀNG LÁ / HÉO RŨ\n";
+    a += "- Thiếu dinh dưỡng hoặc rễ yếu\n";
+    a += "- Bón phân hữu cơ, kiểm tra đất\n\n";
+  }
 
-      if (status.includes("cháy")) {
-        advice += "🔥 Cháy lá:\n";
-        advice += "- Có thể do nắng gắt hoặc thiếu nước.\n";
-        advice += "- Che nắng, tưới đều.\n\n";
-      }
+  if (status.includes("đốm")) {
+    a += "🦠 ĐỐM LÁ\n";
+    a += "- Có khả năng bệnh nấm\n";
+    a += "- Cắt lá bệnh, tránh ẩm cao\n\n";
+  }
 
-      if (temp > 35) advice += "🌡️ Nhiệt độ cao → che phủ đất.\n";
-      if (temp < 15) advice += "🌡️ Nhiệt độ thấp → giảm tưới.\n";
-      if (moisture < 40) advice += "💧 Độ ẩm thấp → cây thiếu nước.\n";
-      if (moisture > 80) advice += "💧 Độ ẩm cao → nguy cơ thối rễ.\n";
+  if (status.includes("cháy")) {
+    a += "🔥 CHÁY LÁ\n";
+    a += "- Do nắng gắt hoặc thiếu nước\n";
+    a += "- Che nắng, tưới đều\n\n";
+  }
 
-      return advice || "🌿 Cây đang trong tình trạng tốt.";
-    }
+  if (temp > 35) a += "🌡️ Nhiệt độ cao → che phủ đất\n";
+  if (temp < 15) a += "🌡️ Nhiệt độ thấp → giảm tưới\n";
+  if (moisture < 40) a += "💧 Độ ẩm thấp → cây thiếu nước\n";
+  if (moisture > 80) a += "💧 Độ ẩm cao → nguy cơ thối rễ\n";
 
-    async function loadImage(event) {
-      if (!model) await init();
+  return a || "🌿 Cây đang phát triển tốt.";
+}
 
-      const img = document.getElementById("preview");
-      img.src = window.URL.createObjectURL(event.target.files[0]);
+async function loadImage(event) {
+  if (!model) await init();
 
-      img.onload = async () => {
-        const prediction = await model.predict(img);
-        let best = prediction[0];
+  const img = document.getElementById("preview");
+  img.src = URL.createObjectURL(event.target.files[0]);
 
-        for (let p of prediction) {
-          if (p.probability > best.probability) best = p;
-        }
+  img.onload = async () => {
+    const pred = await model.predict(img);
+    let best = pred.reduce((a,b)=>a.probability>b.probability?a:b);
 
-        const temp = document.getElementById("temp").value;
-        const moisture = document.getElementById("moisture").value;
+    const temp = Number(document.getElementById("temp").value);
+    const moisture = Number(document.getElementById("moisture").value);
 
-        document.getElementById("input-stage").style.display = "none";
-        document.getElementById("result-stage").style.display = "block";
+    document.getElementById("input-stage").style.display = "none";
+    document.getElementById("result-stage").style.display = "block";
 
-        document.getElementById("leafResult").innerText =
-          `🌿 ${best.className} (${(best.probability*100).toFixed(1)}%)`;
+    document.getElementById("leafResult").innerText =
+      `🌿 ${best.className} (${(best.probability*100).toFixed(1)}%)`;
 
-        document.getElementById("tempChip").innerText = `🌡️ ${temp}°C`;
-        document.getElementById("moistureChip").innerText = `💧 ${moisture}%`;
+    document.getElementById("tempBox").innerText = `🌡️ Nhiệt độ: ${temp} °C`;
+    document.getElementById("moistureBox").innerText = `💧 Độ ẩm: ${moisture} %`;
 
-        document.getElementById("advice-box").innerText =
-          evaluatePlant(best.className.toLowerCase(), temp, moisture);
-      };
-    }
-  </script>
+    document.getElementById("advice-box").innerText =
+      evaluatePlant(best.className.toLowerCase(), temp, moisture);
+  };
+}
+</script>
 
 </body>
 </html>
-
-
