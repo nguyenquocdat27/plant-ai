@@ -23,7 +23,6 @@ h1 {
   margin-bottom: 14px;
 }
 
-/* ===== INPUT STAGE ===== */
 #input-stage {
   background: #147a3a;
   padding: 22px;
@@ -42,7 +41,6 @@ input[type="number"] {
   display: block;
 }
 
-/* ===== RESULT STAGE ===== */
 #result-stage {
   display: none;
 }
@@ -54,14 +52,12 @@ img {
   margin: 16px auto;
 }
 
-/* Kết quả lá */
 #leafResult {
   font-size: 24px;
   font-weight: bold;
   margin: 12px 0;
 }
 
-/* Nhiệt độ & độ ẩm */
 .env-box {
   background: #b6ff7a;
   color: #000;
@@ -73,7 +69,6 @@ img {
   max-width: 360px;
 }
 
-/* ===== ĐÁNH GIÁ ===== */
 #advice-box {
   background: #eaffd0;
   color: #000;
@@ -81,9 +76,8 @@ img {
   border-radius: 24px;
   margin: 20px auto;
   font-size: 20px;
-  text-align: center;
   white-space: pre-line;
-  max-width: 420px;
+  max-width: 440px;
   box-shadow: 0 4px 14px rgba(0,0,0,0.2);
 }
 </style>
@@ -93,15 +87,13 @@ img {
 
 <h1>🌱 Plant AI</h1>
 
-<!-- ===== TRƯỚC KHI NHẬP ===== -->
 <div id="input-stage">
   <input type="file" accept="image/*" onchange="loadImage(event)">
   <input type="number" id="temp" placeholder="🌡️ Nhiệt độ đất (°C)">
   <input type="number" id="moisture" placeholder="💧 Độ ẩm đất (%)">
-  <p style="font-size:18px;">📸 Chọn ảnh + nhập dữ liệu để AI phân tích</p>
+  <p style="font-size:18px;">📸 Chọn ảnh và nhập dữ liệu để AI phân tích</p>
 </div>
 
-<!-- ===== SAU KHI CÓ KẾT QUẢ ===== -->
 <div id="result-stage">
   <img id="preview">
   <div id="leafResult"></div>
@@ -123,64 +115,73 @@ async function init() {
   );
 }
 
-/* ===== ĐÁNH GIÁ TỔNG HỢP ===== */
 function evaluatePlant(status, temp, moisture) {
-  let text = "🧠 ĐÁNH GIÁ TỔNG HỢP\n\n";
+  let text = "";
 
-  /* Phân tích lá */
-  if (status.includes("tốt")) {
+  /* ===== LÁ CÂY ===== */
+  text += "🧠 ĐÁNH GIÁ TỪ LÁ CÂY\n";
+  if (status.includes("tốt"))
     text += "🌿 Lá khỏe, màu sắc ổn định.\n";
-  }
-
-  if (status.includes("vàng")) {
-    text += "🍂 Lá vàng / héo → rễ hấp thu kém hoặc thiếu dinh dưỡng.\n";
-  }
-
-  if (status.includes("đốm")) {
-    text += "🦠 Có đốm lá → nguy cơ bệnh nấm.\n";
-  }
-
-  if (status.includes("cháy")) {
+  if (status.includes("vàng"))
+    text += "🍂 Lá vàng/héo → thiếu dinh dưỡng hoặc rễ yếu.\n";
+  if (status.includes("đốm"))
+    text += "🦠 Đốm lá → nghi ngờ nấm hoặc vi khuẩn.\n";
+  if (status.includes("cháy"))
     text += "🔥 Mép lá cháy → stress nhiệt hoặc thiếu nước.\n";
-  }
 
-  text += "\n📊 PHÂN TÍCH MÔI TRƯỜNG\n";
+  /* ===== MÔI TRƯỜNG ===== */
+  text += "\n📊 ĐÁNH GIÁ MÔI TRƯỜNG\n";
+  if (temp > 35) text += "🌡️ Nhiệt độ cao → dễ sốc nhiệt.\n";
+  else if (temp < 15) text += "🌡️ Nhiệt độ thấp → cây phát triển chậm.\n";
+  else text += "🌡️ Nhiệt độ phù hợp.\n";
 
-  if (temp > 35) {
-    text += "🌡️ Nhiệt độ rất cao → cây dễ sốc nhiệt.\n";
-  } else if (temp < 15) {
-    text += "🌡️ Nhiệt độ thấp → cây sinh trưởng chậm.\n";
+  if (moisture < 40) text += "💧 Độ ẩm thấp → cây thiếu nước.\n";
+  else if (moisture > 80) text += "💧 Độ ẩm cao → nguy cơ úng rễ.\n";
+  else text += "💧 Độ ẩm ổn định.\n";
+
+  /* ===== CHẨN ĐOÁN ===== */
+  text += "\n⚠️ CHẨN ĐOÁN TỔNG HỢP\n";
+
+  let heatStress = status.includes("cháy") && temp > 35 && moisture < 40;
+  let fungalRisk = status.includes("đốm") && moisture > 70;
+
+  if (heatStress)
+    text += "👉 Stress nhiệt kết hợp thiếu nước.\n";
+  else if (fungalRisk)
+    text += "👉 Môi trường thuận lợi cho bệnh nấm.\n";
+  else
+    text += "👉 Cây tương đối ổn định.\n";
+
+  /* ===== NGUYÊN NHÂN ===== */
+  text += "\n🧬 NGUYÊN NHÂN SINH HỌC\n";
+  if (heatStress) {
+    text += "- Thoát hơi nước mạnh qua lá\n";
+    text += "- Rễ không hút đủ nước\n";
+    text += "- Tế bào lá bị tổn thương nhiệt\n";
+  } else if (fungalRisk) {
+    text += "- Độ ẩm cao kéo dài\n";
+    text += "- Bào tử nấm phát triển mạnh\n";
   } else {
-    text += "🌡️ Nhiệt độ phù hợp.\n";
+    text += "- Quá trình sinh lý ổn định\n";
   }
 
-  if (moisture < 40) {
-    text += "💧 Độ ẩm thấp → cây thiếu nước.\n";
-  } else if (moisture > 80) {
-    text += "💧 Độ ẩm cao → nguy cơ thối rễ.\n";
+  /* ===== GIẢI PHÁP ===== */
+  text += "\n🛠️ GIẢI PHÁP THỰC TẾ\n";
+  if (heatStress) {
+    text += "- Tưới nước sáng sớm/chiều mát\n";
+    text += "- Che nắng tạm thời\n";
+    text += "- Phủ gốc giữ ẩm\n";
+  } else if (fungalRisk) {
+    text += "- Cắt bỏ lá bệnh\n";
+    text += "- Giảm tưới nước lên lá\n";
+    text += "- Tăng thông thoáng\n";
   } else {
-    text += "💧 Độ ẩm ổn định.\n";
+    text += "- Duy trì chăm sóc hiện tại\n";
   }
-
-  text += "\n⚠️ CHẨN ĐOÁN\n";
-
-  if (status.includes("cháy") && temp > 35 && moisture < 40) {
-    text += "👉 Cây đang bị STRESS NHIỆT + THIẾU NƯỚC nghiêm trọng.\n";
-  } else if (status.includes("đốm") && moisture > 70) {
-    text += "👉 Điều kiện thuận lợi cho NẤM BỆNH phát triển.\n";
-  } else {
-    text += "👉 Cây có tình trạng tốt, tiếp tục duy trì.\n";
-  }
-
-  text += "\n✅ KHUYẾN KHÍCH\n";
-  text += "• Tưới nước vào sáng sớm\n";
-  text += "• Che gốc, phủ rơm giữ ẩm\n";
-  text += "• Theo dõi lá mới trong 3–5 ngày\n";
 
   return text;
 }
 
-/* ===== LOAD ẢNH ===== */
 async function loadImage(event) {
   if (!model) await init();
 
@@ -214,4 +215,3 @@ async function loadImage(event) {
 
 </body>
 </html>
-
