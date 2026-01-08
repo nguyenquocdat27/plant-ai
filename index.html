@@ -135,15 +135,15 @@ function evaluatePlant(status, temp, moisture) {
   else if (temp < 15) text += "🌡️ Nhiệt độ thấp → cây phát triển chậm.\n";
   else text += "🌡️ Nhiệt độ phù hợp.\n";
 
-  if (moisture < 40) text += "💧 Độ ẩm thấp → cây thiếu nước.\n";
-  else if (moisture > 80) text += "💧 Độ ẩm cao → nguy cơ úng rễ.\n";
+  if (moisture < 20) text += "💧 Độ ẩm thấp → cây thiếu nước.\n";
+  else if (moisture > 50) text += "💧 Độ ẩm cao → nguy cơ úng rễ.\n";
   else text += "💧 Độ ẩm ổn định.\n";
 
   /* ===== CHẨN ĐOÁN ===== */
   text += "\n⚠️ CHẨN ĐOÁN TỔNG HỢP\n";
 
-  let heatStress = status.includes("cháy") && temp > 35 && moisture < 40;
-  let fungalRisk = status.includes("đốm") && moisture > 70;
+  let heatStress = status.includes("cháy") && temp > 35 && moisture < 20;
+  let fungalRisk = status.includes("đốm") && moisture > 50;
 
   if (heatStress)
     text += "👉 Stress nhiệt kết hợp thiếu nước.\n";
@@ -215,3 +215,4 @@ async function loadImage(event) {
 
 </body>
 </html>
+
