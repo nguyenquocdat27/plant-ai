@@ -11,7 +11,7 @@
 <style>
 body {
   margin: 0;
-  padding: 14px;
+  padding: 16px;
   font-family: Arial, sans-serif;
   background: #1b8f4b;
   color: #fff;
@@ -19,28 +19,46 @@ body {
 }
 
 h1 {
-  font-size: 34px;
-  margin-bottom: 14px;
+  font-size: 36px;
+  margin: 10px 0 18px;
+  font-weight: bold;
 }
 
+/* ===== INPUT STAGE ===== */
 #input-stage {
   background: #147a3a;
-  padding: 22px;
-  border-radius: 24px;
+  padding: 26px 20px;
+  border-radius: 28px;
+  max-width: 420px;
+  margin: 0 auto;
 }
 
-input[type="file"],
+input[type="file"] {
+  width: 100%;
+  padding: 22px;
+  font-size: 20px;
+  border-radius: 32px;
+  border: none;
+  background: #fff;
+  color: #000;
+  margin-bottom: 18px;
+}
+
 input[type="number"] {
   width: 100%;
-  max-width: 380px;
-  padding: 20px;
-  margin: 12px auto;
-  border-radius: 30px;
+  padding: 22px;
+  font-size: 24px;
+  border-radius: 32px;
   border: none;
-  font-size: 22px;
-  display: block;
+  margin-bottom: 16px;
 }
 
+#input-stage p {
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+/* ===== RESULT STAGE ===== */
 #result-stage {
   display: none;
 }
@@ -53,7 +71,7 @@ img {
 }
 
 #leafResult {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: bold;
   margin: 12px 0;
 }
@@ -61,20 +79,21 @@ img {
 .env-box {
   background: #b6ff7a;
   color: #000;
-  padding: 20px;
+  padding: 22px;
   border-radius: 22px;
-  margin: 10px auto;
-  font-size: 22px;
+  margin: 12px auto;
+  font-size: 24px;
   font-weight: bold;
   max-width: 360px;
 }
 
+/* ===== ĐÁNH GIÁ ===== */
 #advice-box {
   background: #eaffd0;
   color: #000;
-  padding: 24px;
+  padding: 26px;
   border-radius: 24px;
-  margin: 20px auto;
+  margin: 22px auto;
   font-size: 20px;
   white-space: pre-line;
   max-width: 440px;
@@ -87,13 +106,15 @@ img {
 
 <h1>🌱 Plant AI</h1>
 
+<!-- ===== TRƯỚC KHI NHẬP ===== -->
 <div id="input-stage">
   <input type="file" accept="image/*" onchange="loadImage(event)">
   <input type="number" id="temp" placeholder="🌡️ Nhiệt độ đất (°C)">
   <input type="number" id="moisture" placeholder="💧 Độ ẩm đất (%)">
-  <p style="font-size:18px;">📸 Chọn ảnh và nhập dữ liệu để AI phân tích</p>
+  <p>📸 Chọn ảnh lá cây<br>và nhập dữ liệu để AI phân tích</p>
 </div>
 
+<!-- ===== SAU KHI CÓ KẾT QUẢ ===== -->
 <div id="result-stage">
   <img id="preview">
   <div id="leafResult"></div>
@@ -123,9 +144,9 @@ function evaluatePlant(status, temp, moisture) {
   if (status.includes("tốt"))
     text += "🌿 Lá khỏe, màu sắc ổn định.\n";
   if (status.includes("vàng"))
-    text += "🍂 Lá vàng/héo → thiếu dinh dưỡng hoặc rễ yếu.\n";
+    text += "🍂 Lá vàng / héo → thiếu dinh dưỡng hoặc rễ yếu.\n";
   if (status.includes("đốm"))
-    text += "🦠 Đốm lá → nghi ngờ nấm hoặc vi khuẩn.\n";
+    text += "🦠 Đốm lá → nguy cơ bệnh nấm.\n";
   if (status.includes("cháy"))
     text += "🔥 Mép lá cháy → stress nhiệt hoặc thiếu nước.\n";
 
@@ -146,9 +167,9 @@ function evaluatePlant(status, temp, moisture) {
   let fungalRisk = status.includes("đốm") && moisture > 50;
 
   if (heatStress)
-    text += "👉 Stress nhiệt kết hợp thiếu nước.\n";
+    text += "👉 Stress nhiệt + thiếu nước nghiêm trọng.\n";
   else if (fungalRisk)
-    text += "👉 Môi trường thuận lợi cho bệnh nấm.\n";
+    text += "👉 Điều kiện thuận lợi cho bệnh nấm.\n";
   else
     text += "👉 Cây tương đối ổn định.\n";
 
@@ -162,18 +183,18 @@ function evaluatePlant(status, temp, moisture) {
     text += "- Độ ẩm cao kéo dài\n";
     text += "- Bào tử nấm phát triển mạnh\n";
   } else {
-    text += "- Quá trình sinh lý ổn định\n";
+    text += "- Sinh lý cây ổn định\n";
   }
 
   /* ===== GIẢI PHÁP ===== */
   text += "\n🛠️ GIẢI PHÁP THỰC TẾ\n";
   if (heatStress) {
-    text += "- Tưới nước sáng sớm/chiều mát\n";
+    text += "- Tưới sáng sớm hoặc chiều mát\n";
     text += "- Che nắng tạm thời\n";
     text += "- Phủ gốc giữ ẩm\n";
   } else if (fungalRisk) {
     text += "- Cắt bỏ lá bệnh\n";
-    text += "- Giảm tưới nước lên lá\n";
+    text += "- Giảm tưới lên lá\n";
     text += "- Tăng thông thoáng\n";
   } else {
     text += "- Duy trì chăm sóc hiện tại\n";
@@ -215,4 +236,3 @@ async function loadImage(event) {
 
 </body>
 </html>
-
